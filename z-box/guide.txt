@@ -1,0 +1,58 @@
+Follow guide basically
+│
+├── app/
+│   ├── main.c
+│   ├── startup.c
+│   └── config.c
+│
+├── network/
+│   ├── connection.c
+│   ├── socket.c
+│   ├── relay.c
+│   └── transport.c
+│
+├── circuit/
+│   ├── circuit.c
+│   ├── path_build.c
+│   ├── node_select.c
+│   └── routing.c
+│
+├── crypto/
+│   ├── crypto.c
+│   ├── aes.c
+│   ├── handshake.c
+│   └── keys.c
+│
+├── protocol/
+│   ├── cells.c
+│   ├── packets.c
+│   ├── parser.c
+│   └── commands.c
+│
+├── directory/
+│   ├── consensus.c
+│   ├── authorities.c
+│   └── descriptors.c
+│
+├── browser/
+│   ├── integration.c
+│   └── isolation.c
+│
+├── utils/
+│   ├── logger.c
+│   ├── memory.c
+│   ├── strings.c
+│   └── timer.c
+│
+├── include/
+│   ├── network/
+│   ├── circuit/
+│   ├── crypto/
+│   └── ...
+│
+├── docs/
+│   ├── notes.md
+│   ├── flowcharts.md
+│   └── architecture.md
+│
+└── tests/
