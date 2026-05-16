@@ -758,7 +758,6 @@ sandbox_init_filter(void)
     sandbox_cfg_allow_open_filename(&cfg, tor_strdup(torrc_tmp));
     sandbox_cfg_allow_stat_filename(&cfg, tor_strdup(torrc_bck));
   }
-//JANE JANE
   SMARTLIST_FOREACH(options->FilesOpenedByIncludes, char *, f, {
     if (file_status(f) == FN_DIR) {
       OPENDIR(f);
@@ -767,25 +766,12 @@ sandbox_init_filter(void)
     }
   });
 
-#define RENAME_SUFFIX(name, suffix)        \
-  sandbox_cfg_allow_rename(&cfg,           \
-      get_datadir_fname(name suffix),      \
+#define RENAME_SUFFIX(name, suffix) \ sandbox_cfg_allow_rename(&cfg, \get_datadir_fname(name suffix),      \
       get_datadir_fname(name))
-
 #define RENAME_SUFFIX2(prefix, name, suffix) \
-  sandbox_cfg_allow_rename(&cfg,                                        \
-                           get_datadir_fname2(prefix, name suffix),     \
-                           get_datadir_fname2(prefix, name))
-
-#define RENAME_CACHEDIR_SUFFIX(name, suffix)        \
-  sandbox_cfg_allow_rename(&cfg,           \
-      get_cachedir_fname(name suffix),      \
-      get_cachedir_fname(name))
-
-#define RENAME_KEYDIR_SUFFIX(name, suffix)    \
-  sandbox_cfg_allow_rename(&cfg,           \
-      get_keydir_fname(name suffix),      \
-      get_keydir_fname(name))
+  sandbox_cfg_allow_rename(&cfg,  \ get_datadir_fname2(prefix, name suffix), \ get_datadir_fname2(prefix, name))
+#define RENAME_CACHEDIR_SUFFIX(name, suffix) \ sandbox_cfg_allow_rename(&cfg, \ get_cachedir_fname(name suffix), \ get_cachedir_fname(name))
+#define RENAME_KEYDIR_SUFFIX(name, suffix) \ sandbox_cfg_allow_rename(&cfg, \ get_keydir_fname(name suffix), \  get_keydir_fname(name))
 
   RENAME_CACHEDIR_SUFFIX("cached-certs", ".tmp");
   RENAME_CACHEDIR_SUFFIX("cached-consensus", ".tmp");
@@ -805,13 +791,10 @@ sandbox_init_filter(void)
   RENAME_SUFFIX("sr-state", ".tmp");
   RENAME_SUFFIX("unparseable-desc", ".tmp");
   RENAME_SUFFIX("v3-status-votes", ".tmp");
-  if (options->BridgeAuthoritativeDir)
-    RENAME_SUFFIX("networkstatus-bridges", ".tmp");
-
+  if (options->BridgeAuthoritativeDir)  RENAME_SUFFIX("networkstatus-bridges", ".tmp");
   if (authdir_mode(options)) {
     RENAME_SUFFIX("my-consensus-microdesc", ".tmp");
     RENAME_SUFFIX("my-consensus-ns", ".tmp");
-
     sandbox_cfg_allow_rename(&cfg,
       get_datadir_fname("my-consensus-microdesc"),
       get_datadir_fname("consensus-transparency-microdesc"));
@@ -822,30 +805,22 @@ sandbox_init_filter(void)
 
 #define STAT_DATADIR(name)                      \
   sandbox_cfg_allow_stat_filename(&cfg, get_datadir_fname(name))
-
 #define STAT_CACHEDIR(name)                                             \
   sandbox_cfg_allow_stat_filename(&cfg, get_cachedir_fname(name))
-
 #define STAT_DATADIR2(name, name2)                                      \
   sandbox_cfg_allow_stat_filename(&cfg, get_datadir_fname2((name), (name2)))
-
 #define STAT_KEY_DIRECTORY() \
   sandbox_cfg_allow_stat_filename(&cfg, tor_strdup(options->KeyDirectory))
-
   STAT_DATADIR(NULL);
   STAT_DATADIR("lock");
   STAT_DATADIR("state");
   STAT_DATADIR("router-stability");
-
   STAT_CACHEDIR("cached-extrainfo.new");
-
   {
     smartlist_t *files = smartlist_new();
     tor_log_get_logfile_names(files);
     SMARTLIST_FOREACH(files, char *, file_name, {
-      /* steals reference */
-      sandbox_cfg_allow_open_filename(&cfg, file_name);
-    });
+      sandbox_cfg_allow_open_filename(&cfg, file_name);});
     smartlist_free(files);
   }
 
@@ -856,9 +831,7 @@ sandbox_init_filter(void)
     SMARTLIST_FOREACH(files, char *, file_name, {
       char *tmp_name = NULL;
       tor_asprintf(&tmp_name, "%s.tmp", file_name);
-      sandbox_cfg_allow_rename(&cfg,
-                               tor_strdup(tmp_name), tor_strdup(file_name));
-      /* steals references */
+      sandbox_cfg_allow_rename(&cfg, tor_strdup(tmp_name), tor_strdup(file_name));
       sandbox_cfg_allow_open_filename(&cfg, file_name);
       sandbox_cfg_allow_open_filename(&cfg, tmp_name);
     });
@@ -872,19 +845,15 @@ sandbox_init_filter(void)
 
   {
     char *fname;
-    if ((fname = get_controller_cookie_file_name())) {
-      sandbox_cfg_allow_open_filename(&cfg, fname);
+    if ((fname = get_controller_cookie_file_name())) { sandbox_cfg_allow_open_filename(&cfg, fname);
     }
-    if ((fname = get_ext_or_auth_cookie_file_name())) {
-      sandbox_cfg_allow_open_filename(&cfg, fname);
+    if ((fname = get_ext_or_auth_cookie_file_name())) { sandbox_cfg_allow_open_filename(&cfg, fname);
     }
   }
 
   SMARTLIST_FOREACH_BEGIN(get_configured_ports(), port_cfg_t *, port) {
-    if (!port->is_unix_addr)
-      continue;
-    /* When we open an AF_UNIX address, we want permission to open the
-     * directory that holds it. */
+    if (!port->is_unix_addr) continue;
+
     char *dirname = tor_strdup(port->unix_addr);
     if (get_parent_directory(dirname) == 0) {
       OPENDIR(dirname);
@@ -895,20 +864,15 @@ sandbox_init_filter(void)
   } SMARTLIST_FOREACH_END(port);
 
   if (options->DirPortFrontPage) {
-    sandbox_cfg_allow_open_filename(&cfg,
-                                    tor_strdup(options->DirPortFrontPage));
+    sandbox_cfg_allow_open_filename(&cfg, tor_strdup(options->DirPortFrontPage));
   }
-
-  // orport
   if (server_mode(get_options())) {
-
     OPEN_KEYDIR_SUFFIX("secret_id_key", ".tmp");
     OPEN_KEYDIR_SUFFIX("secret_onion_key", ".tmp");
     OPEN_KEYDIR_SUFFIX("secret_onion_key_ntor", ".tmp");
     OPEN_KEYDIR("secret_id_key.old");
     OPEN_KEYDIR("secret_onion_key.old");
     OPEN_KEYDIR("secret_onion_key_ntor.old");
-
     OPEN_KEYDIR_SUFFIX("ed25519_master_id_secret_key", ".tmp");
     OPEN_KEYDIR_SUFFIX("ed25519_master_id_secret_key_encrypted", ".tmp");
     OPEN_KEYDIR_SUFFIX("ed25519_master_id_public_key", ".tmp");
@@ -916,34 +880,27 @@ sandbox_init_filter(void)
     OPEN_KEYDIR_SUFFIX("ed25519_signing_secret_key_encrypted", ".tmp");
     OPEN_KEYDIR_SUFFIX("ed25519_signing_public_key", ".tmp");
     OPEN_KEYDIR_SUFFIX("ed25519_signing_cert", ".tmp");
-
     OPEN_DATADIR2_SUFFIX("stats", "bridge-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "dirreq-stats", ".tmp");
-
     OPEN_DATADIR2_SUFFIX("stats", "entry-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "exit-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "buffer-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "conn-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "hidserv-stats", ".tmp");
     OPEN_DATADIR2_SUFFIX("stats", "hidserv-v3-stats", ".tmp");
-
     OPEN_DATADIR("approved-routers");
     OPEN_DATADIR_SUFFIX("fingerprint", ".tmp");
     OPEN_DATADIR_SUFFIX("fingerprint-ed25519", ".tmp");
     OPEN_DATADIR_SUFFIX("hashed-fingerprint", ".tmp");
     OPEN_DATADIR_SUFFIX("router-stability", ".tmp");
-
     OPEN("/etc/resolv.conf");
-
     RENAME_SUFFIX("fingerprint", ".tmp");
     RENAME_SUFFIX("fingerprint-ed25519", ".tmp");
     RENAME_KEYDIR_SUFFIX("secret_onion_key_ntor", ".tmp");
-
     RENAME_KEYDIR_SUFFIX("secret_id_key", ".tmp");
     RENAME_KEYDIR_SUFFIX("secret_id_key.old", ".tmp");
     RENAME_KEYDIR_SUFFIX("secret_onion_key", ".tmp");
     RENAME_KEYDIR_SUFFIX("secret_onion_key.old", ".tmp");
-
     RENAME_SUFFIX2("stats", "bridge-stats", ".tmp");
     RENAME_SUFFIX2("stats", "dirreq-stats", ".tmp");
     RENAME_SUFFIX2("stats", "entry-stats", ".tmp");
@@ -954,25 +911,17 @@ sandbox_init_filter(void)
     RENAME_SUFFIX2("stats", "hidserv-v3-stats", ".tmp");
     RENAME_SUFFIX("hashed-fingerprint", ".tmp");
     RENAME_SUFFIX("router-stability", ".tmp");
-
     RENAME_KEYDIR_SUFFIX("ed25519_master_id_secret_key", ".tmp");
     RENAME_KEYDIR_SUFFIX("ed25519_master_id_secret_key_encrypted", ".tmp");
     RENAME_KEYDIR_SUFFIX("ed25519_master_id_public_key", ".tmp");
     RENAME_KEYDIR_SUFFIX("ed25519_signing_secret_key", ".tmp");
     RENAME_KEYDIR_SUFFIX("ed25519_signing_cert", ".tmp");
-
-    sandbox_cfg_allow_rename(&cfg,
-             get_keydir_fname("secret_onion_key"),
-             get_keydir_fname("secret_onion_key.old"));
-    sandbox_cfg_allow_rename(&cfg,
-             get_keydir_fname("secret_onion_key_ntor"),
-             get_keydir_fname("secret_onion_key_ntor.old"));
-
+    sandbox_cfg_allow_rename(&cfg, get_keydir_fname("secret_onion_key"), get_keydir_fname("secret_onion_key.old"));
+    sandbox_cfg_allow_rename(&cfg, get_keydir_fname("secret_onion_key_ntor"), get_keydir_fname("secret_onion_key_ntor.old"));
     STAT_KEY_DIRECTORY();
     OPEN_DATADIR("stats");
     STAT_DATADIR("stats");
     STAT_DATADIR2("stats", "dirreq-stats");
-
     consdiffmgr_register_with_sandbox(&cfg);
   }
 
@@ -988,8 +937,6 @@ run_tor_main_loop(void)
   timers_initialize();
   initialize_mainloop_events();
 
-  /* load the private keys, if we're supposed to have them, and set up the
-   * TLS context. */
   if (! client_identity_key_is_set()) {
     if (init_keys() < 0) {
       log_err(LD_OR, "Error initializing keys; exiting");
@@ -1023,12 +970,8 @@ run_tor_main_loop(void)
   if (trusted_dirs_reload_certs()) {
     log_warn(LD_DIR, "Couldn't load all cached v3 certificates. Starting anyway.");
   }
-  if (router_reload_consensus_networkstatus()) {
-    return -1;
-  }
-  if (router_reload_router_list()) {
-    return -1;
-  }
+  if (router_reload_consensus_networkstatus())  return -1;
+  if (router_reload_router_list())   return -1;
   const time_t now = time(NULL);
   directory_info_has_arrived(now, 1, 0);
   if (cpuworker_init() == -1) return -1;
@@ -1128,8 +1071,7 @@ tor_run_main(const tor_main_configuration_t *tor_cfg)
     tor_make_getaddrinfo_cache_active();
 
 #ifdef HAVE_EVUTIL_SECURE_RNG_SET_URANDOM_DEVICE_FILE
-    evutil_secure_rng_set_urandom_device_file(
-        (char*) sandbox_intern_string("/dev/urandom"));
+    evutil_secure_rng_set_urandom_device_file((char*) sandbox_intern_string("/dev/urandom"));
 #endif
   }
   switch (get_options()->command) {
@@ -1168,8 +1110,7 @@ tor_run_main(const tor_main_configuration_t *tor_cfg)
   case CMD_RUN_UNITTESTS: /* only set by test.c */
   case CMD_IMMEDIATE: /* Handled in config.c */
   default:
-    log_warn(LD_BUG,"Illegal command number %d: internal error.",
-             get_options()->command);
+    log_warn(LD_BUG,"Illegal command number %d: internal error.", get_options()->command);
     result = -1;
   }
   tor_cleanup();
