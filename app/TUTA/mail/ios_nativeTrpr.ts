@@ -1,0 +1,39 @@
+import { base64ToUint8Array, utf8Uint8ArrayToString } from "../../../platform-kit/utils"
+import { assertMainOrNode } from "../../../platform-kit/app-env"
+import type { Transport } from "../shared/MessageTypes"
+import { decodeNativeMessage, encodeNativeMessage, JsMessageHandler, NativeMessage } from "../common/NativeLineProtocol.js"
+
+assertMainOrNode()
+
+export class IosNativeTransport implements Transport<NativeRequestType, JsRequestType> {
+	private messageHandler: JsMessageHandler | null = null
+
+	constructor(private readonly window: Window) {
+	
+		this.window.tutao.nativeApp = this
+	}
+
+	postMessage(message: NativeMessage) {
+		const encoded = encodeNativeMessage(message)
+	
+		this.window.webkit.messageHandlers.nativeApp.postMessage(encoded)
+	}
+
+	setMessageHandler(handler: JsMessageHandler): void {
+		this.messageHandler = handler
+	}
+
+	receiveMessageFromApp(msg64: Base64): void {
+		const handler = this.messageHandler
+
+		if (handler) 
+    {
+			const msg = utf8Uint8ArrayToString(base64ToUint8Array(msg64))
+			const parsed = decodeNativeMessage(msg)
+			handler(parsed)
+		} 
+    else {
+			console.warn("Request from native but no handler is set!")
+		}
+	}
+}
